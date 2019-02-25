@@ -11,13 +11,13 @@ clear
 
 #Create stack
 
-#pe "aws cloudformation create-stack --stack-name x-ray --template-body https://raw.githubusercontent.com/jicowan/ecsworkshop-xray/master/src/x-ray.yaml"
+pe "aws cloudformation create-stack --stack-name x-ray --template-body https://raw.githubusercontent.com/jicowan/ecsworkshop-xray/master/src/x-ray.yaml"
 
 #Create a task role that allows the task to write traces to AWS X-Ray.
 
-#pe "export TASK_ROLE_NAME=\$(aws iam create-role --role-name XrayRole --assume-role-policy-document file://ecs-trust-pol.json --query 'Role.RoleName' --output text)"
-#pe "export XRAY_POLICY_ARN=\$(aws iam create-policy --policy-name XrayPolicy --policy-document file://xray-pol.json --query 'Policy.Arn' --output text)"
-#pe "aws iam attach-role-policy --role-name \$TASK_ROLE_NAME --policy-arn \$XRAY_POLICY_ARN"
+pe "export TASK_ROLE_NAME=\$(aws iam create-role --role-name XrayRole --assume-role-policy-document file://ecs-trust-pol.json --query 'Role.RoleName' --output text)"
+pe "export XRAY_POLICY_ARN=\$(aws iam create-policy --policy-name XrayPolicy --policy-document file://xray-pol.json --query 'Policy.Arn' --output text)"
+pe "aws iam attach-role-policy --role-name \$TASK_ROLE_NAME --policy-arn \$XRAY_POLICY_ARN"
 
 #Export the Arns of the task role and the task execution role.
 
