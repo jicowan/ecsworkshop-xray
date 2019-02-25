@@ -1,0 +1,282 @@
+Resources:
+  VpcF9F0CA6F:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: XRay/Vpc
+    Metadata:
+      aws:cdk:path: XRay/Vpc/Resource
+  VpcPublicSubnet1SubnetF6608456:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.0.0/19
+      VpcId:
+        Ref: VpcF9F0CA6F
+      AvailabilityZone: us-west-2a
+      MapPublicIpOnLaunch: true
+    Metadata:
+      aws:cdk:path: XRay/Vpc/PublicSubnet1/Subnet
+  VpcPublicSubnet2Subnet492B6BFB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.32.0/19
+      VpcId:
+        Ref: VpcF9F0CA6F
+      AvailabilityZone: us-west-2b
+      MapPublicIpOnLaunch: true
+    Metadata:
+      aws:cdk:path: XRay/Vpc/PublicSubnet2/Subnet
+  VpcPublicSubnet3Subnet57EEE236:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.64.0/19
+      VpcId:
+        Ref: VpcF9F0CA6F
+      AvailabilityZone: us-west-2c
+      MapPublicIpOnLaunch: true
+    Metadata:
+      aws:cdk:path: XRay/Vpc/PublicSubnet3/Subnet
+  VpcIGW5C4A4F63:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: XRay/Vpc
+    Metadata:
+      aws:cdk:path: XRay/Vpc/IGW
+  VpcVPCGW488ACE0D:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: VpcF9F0CA6F
+      InternetGatewayId:
+        Ref: VpcIGW5C4A4F63
+    Metadata:
+      aws:cdk:path: XRay/Vpc/VPCGW
+  VpcRouteTableC46AB2F4:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VpcF9F0CA6F
+    Metadata:
+      aws:cdk:path: MyEcsConstructStack/MyVpc/PublicSubnet1/RouteTable
+  VpcRouteTableAssociation2ECEE1CB:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: VpcRouteTableC46AB2F4
+      SubnetId: 
+        Ref: VpcPublicSubnet1SubnetF6608456
+    Metadata:
+      aws:cdk:path: MyEcsConstructStack/MyVpc/PublicSubnet1/RouteTableAssociation
+  VpcRouteTableAssociation227DE78D:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: VpcRouteTableC46AB2F4
+      SubnetId: 
+        Ref: VpcPublicSubnet2Subnet492B6BFB
+    Metadata:
+      aws:cdk:path: MyEcsConstructStack/MyVpc/PublicSubnet1/RouteTableAssociation
+  VpcRouteTableAssociation5C27DDA4:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: VpcRouteTableC46AB2F4
+      SubnetId:
+        Ref: VpcPublicSubnet3Subnet57EEE236
+    Metadata:
+      aws:cdk:path: MyEcsConstructStack/MyVpc/PublicSubnet1/RouteTableAssociation
+  VpcPublicDefaultRoute95FDF9EB:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: VpcRouteTableC46AB2F4
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: VpcIGW5C4A4F63
+    DependsOn:
+      - VpcVPCGW488ACE0D
+    Metadata:
+      aws:cdk:path: MyEcsConstructStack/MyVpc/PublicSubnet1/DefaultRoute
+  Cluster4C1BA579:
+    Type: AWS::ECS::Cluster
+  FargateServiceLBSecurityGroup6FBF16F1:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Automatically created Security Group for ELB
+        MyEcsConstructStackMyFargateServiceLBFE4A469E
+      SecurityGroupEgress: []
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow from anyone on port 80
+          FromPort: 80
+          IpProtocol: tcp
+          ToPort: 80
+      VpcId:
+        Ref: VpcF9F0CA6F
+    Metadata:
+      aws:cdk:path: MyEcsConstructStack/MyFargateService/LB/SecurityGroup/Resource
+  FargateServiceLBSecurityGrouptoMyEcsConstructStackMyFargateServiceSecurityGroup7C7893E980F43E4376:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Fn::GetAtt:
+          - FargateServiceLBSecurityGroup6FBF16F1
+          - GroupId
+      IpProtocol: tcp
+      Description: Load balancer to target
+      DestinationSecurityGroupId:
+        Fn::GetAtt:
+          - FargateServiceSecurityGroup7016792A
+          - GroupId
+      FromPort: 8080
+      ToPort: 8080
+    Metadata:
+      aws:cdk:path: MyEcsConstructStack/MyFargateService/LB/SecurityGroup/to
+        MyEcsConstructStackMyFargateServiceSecurityGroup7C7893E9:80
+  FargateServiceALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      LoadBalancerAttributes: []
+      Scheme: internet-facing
+      SecurityGroups:
+        - Fn::GetAtt:
+            - FargateServiceLBSecurityGroup6FBF16F1
+            - GroupId
+      Subnets:
+        - Ref: VpcPublicSubnet1SubnetF6608456
+        - Ref: VpcPublicSubnet2Subnet492B6BFB
+        - Ref: VpcPublicSubnet3Subnet57EEE236
+      Type: application
+  FargateServiceBLB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      LoadBalancerAttributes: []
+      Scheme: internet-facing
+      SecurityGroups:
+        - Fn::GetAtt:
+            - FargateServiceLBSecurityGroup6FBF16F1
+            - GroupId
+      Subnets:
+        - Ref: VpcPublicSubnet1SubnetF6608456
+        - Ref: VpcPublicSubnet2Subnet492B6BFB
+        - Ref: VpcPublicSubnet3Subnet57EEE236
+      Type: application
+  FargateServiceALBPublicListener61A1042F:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - TargetGroupArn:
+            Ref: FargateServiceALBPublicListenerECSGroup4A3EDF05
+          Type: forward
+      LoadBalancerArn:
+        Ref: FargateServiceALB
+      Port: 80
+      Protocol: HTTP
+      Certificates: []
+    Metadata:
+      aws:cdk:path: MyEcsConstructStack/MyFargateService/LB/PublicListener/Resource
+  FargateServiceBLBPublicListener61A1042F:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - TargetGroupArn:
+            Ref: FargateServiceBLBPublicListenerECSGroup4A3EDF05
+          Type: forward
+      LoadBalancerArn:
+        Ref: FargateServiceBLB
+      Port: 80
+      Protocol: HTTP
+      Certificates: []
+    Metadata:
+      aws:cdk:path: MyEcsConstructStack/MyFargateService/LB/PublicListener/Resource
+  FargateServiceALBPublicListenerECSGroup4A3EDF05:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Port: 8080
+      Protocol: HTTP
+      VpcId:
+        Ref: VpcF9F0CA6F
+      TargetGroupAttributes: []
+      Targets: []
+      TargetType: ip
+    Metadata:
+      aws:cdk:path: MyEcsConstructStack/MyFargateService/LB/PublicListener/ECSGroup/Resource
+  FargateServiceBLBPublicListenerECSGroup4A3EDF05:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Port: 8080
+      Protocol: HTTP
+      VpcId:
+        Ref: VpcF9F0CA6F
+      TargetGroupAttributes: []
+      Targets: []
+      TargetType: ip
+    Metadata:
+      aws:cdk:path: MyEcsConstructStack/MyFargateService/LB/PublicListener/ECSGroup/Resource
+  FargateServiceSecurityGroup7016792A:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: MyEcsConstructStack/MyFargateService/Service/SecurityGroup
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: "-1"
+      SecurityGroupIngress: []
+      VpcId:
+        Ref: VpcF9F0CA6F
+    Metadata:
+      aws:cdk:path: MyEcsConstructStack/MyFargateService/Service/SecurityGroup/Resource
+  FargateServiceSecurityGroupfromMyEcsConstructStackMyFargateServiceLBSecurityGroupE3A4034180AB7EAC54:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: tcp
+      Description: Load balancer to target
+      FromPort: 8080
+      GroupId:
+        Fn::GetAtt:
+          - FargateServiceSecurityGroup7016792A
+          - GroupId
+      SourceSecurityGroupId:
+        Fn::GetAtt:
+          - FargateServiceLBSecurityGroup6FBF16F1
+          - GroupId
+      ToPort: 8080
+    Metadata:
+      aws:cdk:path: MyEcsConstructStack/MyFargateService/Service/SecurityGroup/from
+        MyEcsConstructStackMyFargateServiceLBSecurityGroupE3A40341:80
+Outputs:
+  ServiceAEndpoint:
+    Value:
+      Fn::GetAtt:
+        - FargateServiceALB
+        - DNSName
+  ServiceBEndpoint: 
+    Value: 
+      Fn::GetAtt: 
+       - FargateServiceBLB
+       - DNSName
+  Subnet1:
+    Value: 
+      Ref: VpcPublicSubnet1SubnetF6608456
+  Subnet2:
+    Value: 
+      Ref: VpcPublicSubnet2Subnet492B6BFB
+  FargateSecurityGroup:
+    Value: 
+      Ref: FargateServiceSecurityGroup7016792A 
+  EcsClusterName: 
+    Value: 
+      Ref: Cluster4C1BA579
+  TargetGroupServiceA:
+    Value:
+      Ref: FargateServiceALBPublicListenerECSGroup4A3EDF05
+  TargetGroupServiceB:
+    Value: 
+      Ref: FargateServiceBLBPublicListener61A1042F
