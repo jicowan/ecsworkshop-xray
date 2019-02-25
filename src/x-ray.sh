@@ -1,3 +1,7 @@
+#Create stack
+
+pe "aws cloudformation create-stack --stack-name x-ray --template-url https://raw.githubusercontent.com/jicowan/ecsworkshop-xray/master/src/x-ray.yaml?token=AIWEq3z16JCQiXj9y4OeYaxjWdHF2S4sks5cc1TiwA%3D%3D"
+
 #Create a task role that allows the task to write traces to AWS X-Ray.
 
 pe "export TASK_ROLE_NAME=$(aws iam create-role --role-name XrayRole --assume-role-policy-document file://ecs-trust-pol.json --query 'Role.RoleName' --output text)"
@@ -41,11 +45,16 @@ pe "ecs-cli configure --cluster $ECS_CLUSTER --region us-west-2"
 
 #Create service B.
 
-pe "envsubst < ./service-b/docker-compose.yml-template > ./service-b/docker-compose.yml"
-pe "envsubst < ./service-b/ecs-params.yml-template > ./service-b/ecs-params.yml"
+pe "cd ./service-b"
+pe "envsubst < docker-compose.yml-template > docker-compose.yml"
+pe "envsubst < ecs-params.yml-template > ecs-params.yml"
 pe "ecs-cli compose service up --deployment-max-percent 100 --deployment-min-healthy-percent 0 --target-group-arn $TARGET_GROUP_SERVICE_B --launch-type FARGATE --container-name service-b --container-port 8080"
+pe "cd .."
 
 #Create service A.
-pe "envsubst < ./service-a/docker-compose.yml-template > ./service-a/docker-compose.yml"
-pe "envsubst < ./service-a/ecs-params.yml-template > ./service-a/ecs-params.yml" 
+
+pe "cd ./service-a"
+pe "envsubst < docker-compose.yml-template > docker-compose.yml"
+pe "envsubst < ecs-params.yml-template > ecs-params.yml" 
 pe "ecs-cli compose service up --deployment-max-percent 100 --deployment-min-healthy-percent 0 --target-group-arn $TARGET_GROUP_SERVICE_A --launch-type FARGATE --container-name service-a --container-port 8080"
+pe "cd .."
