@@ -1,3 +1,14 @@
+#!/bin/bash
+
+########################
+# include the magic
+########################
+. demo-magic.sh
+#DEMO_PROMPT="${GREEN}➜ ${CYAN}\W "
+PROMPT_TIMEOUT=60
+# hide the evidence
+clear
+
 #Create stack
 
 pe "aws cloudformation create-stack --stack-name x-ray --template-url https://raw.githubusercontent.com/jicowan/ecsworkshop-xray/master/src/x-ray.yaml?token=AIWEq3z16JCQiXj9y4OeYaxjWdHF2S4sks5cc1TiwA%3D%3D"
