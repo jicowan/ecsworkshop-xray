@@ -3,7 +3,7 @@
 ########################
 # include the magic
 ########################
-. demo-magic.sh
+. demo-magic.sh -d
 #DEMO_PROMPT="${GREEN}➜ ${CYAN}\W "
 PROMPT_TIMEOUT=60
 # hide the evidence
@@ -32,6 +32,7 @@ pe "export SUBNET_ID_2=\$(aws cloudformation describe-stacks --stack-name x-ray 
 pe "export SERVICE_B_ENDPOINT=\$(aws cloudformation describe-stacks --stack-name x-ray --query 'Stacks[0].Outputs[?OutputKey==\`ServiceBEndpoint\`][OutputValue] | [0][0]' --output text)"
 pe "export TARGET_GROUP_SERVICE_A=\$(aws cloudformation describe-stacks --stack-name x-ray --query 'Stacks[0].Outputs[?OutputKey==\`TargetGroupServiceA\`][OutputValue] | [0][0]' --output text)"
 pe "export TARGET_GROUP_SERVICE_B=\$(aws cloudformation describe-stacks --stack-name x-ray --query 'Stacks[0].Outputs[?OutputKey==\`TargetGroupServiceB\`][OutputValue] | [0][0]' --output text)"
+pe "export FARGATE_SECURITY_GROUP=\$(aws cloudformation describe-stacks --stack-name x-ray --query 'Stacks[0].Outputs[?OutputKey==\`FargateSecurityGroup\`][OutputValue] | [0][0]' --output text)"
 
 #Configure ecs-cli
 
@@ -57,15 +58,15 @@ pe "export REGISTRY_URL_SERVICE_A=\$(aws ecr describe-repositories --repository-
 #Create service B.
 
 pe "cd ./service-b"
-pe "envsubst < docker-compose.yml-template > docker-compose.yml"
-pe "envsubst < ecs-params.yml-template > ecs-params.yml"
+pe "../envsubst < docker-compose.yml-template > docker-compose.yml"
+pe "../envsubst < ecs-params.yml-template > ecs-params.yml"
 pe "ecs-cli compose service up --deployment-max-percent 100 --deployment-min-healthy-percent 0 --target-group-arn \$TARGET_GROUP_SERVICE_B --launch-type FARGATE --container-name service-b --container-port 8080"
 pe "cd .."
 
 #Create service A.
 
 pe "cd ./service-a"
-pe "envsubst < docker-compose.yml-template > docker-compose.yml"
-pe "envsubst < ecs-params.yml-template > ecs-params.yml" 
+pe "../envsubst < docker-compose.yml-template > docker-compose.yml"
+pe "../envsubst < ecs-params.yml-template > ecs-params.yml" 
 pe "ecs-cli compose service up --deployment-max-percent 100 --deployment-min-healthy-percent 0 --target-group-arn \$TARGET_GROUP_SERVICE_A --launch-type FARGATE --container-name service-a --container-port 8080"
 pe "cd .."

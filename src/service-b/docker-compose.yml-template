@@ -10,7 +10,7 @@ services:
       driver: awslogs
       options:
         awslogs-group: /ecs/service-b
-        awslogs-region: us-east-1
+        awslogs-region: us-west-2
         awslogs-stream-prefix: ecs
   x-ray:
     image: amazon/aws-xray-daemon
@@ -22,5 +22,5 @@ services:
       driver: awslogs
       options:
         awslogs-group: /ecs/service-b
-        awslogs-region: us-east-1
+        awslogs-region: us-west-2
         awslogs-stream-prefix: ecs

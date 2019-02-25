@@ -279,4 +279,4 @@ Outputs:
       Ref: FargateServiceALBPublicListenerECSGroup4A3EDF05
   TargetGroupServiceB:
     Value: 
-      Ref: FargateServiceBLBPublicListener61A1042F
+      Ref: FargateServiceBLBPublicListenerECSGroup4A3EDF05

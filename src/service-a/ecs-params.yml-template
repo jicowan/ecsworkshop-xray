@@ -16,5 +16,5 @@ run_params:
         - ${SUBNET_ID_1}
         - ${SUBNET_ID_2}
       security_groups:
-        - ${SG_ID}
+        - ${FARGATE_SECURITY_GROUP}
       assign_public_ip: ENABLED
